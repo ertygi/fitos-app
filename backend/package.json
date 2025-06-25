@@ -4,8 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "build": "echo \"--- Listing parent directory contents ---\" && ls -la .. && echo \"--- Attempting to build frontend ---\" && cd ../frontend && npm install --legacy-peer-deps && npm run build"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",

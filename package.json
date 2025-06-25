@@ -1,0 +1,12 @@
+{
+  "name": "fitos-app-monorepo",
+  "version": "1.0.0",
+  "description": "Root package for FitOS application",
+  "scripts": {
+    "start": "cd backend && npm start",
+    "build": "cd backend && npm install && cd ../frontend && npm install --legacy-peer-deps && npm run build"
+  },
+  "author": "",
+  "license": "ISC"
+}
+
