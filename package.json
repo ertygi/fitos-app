@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "Root package for FitOS application",
   "scripts": {
-    "start": "node backend/server.js",
-    "build": "./build.sh"
+    "postinstall": "npm install --prefix backend && npm install --prefix frontend --legacy-peer-deps",
+    "build": "npm run build --prefix frontend",
+    "start": "node backend/server.js"
   },
   "engines": {
     "node": "18.x"
