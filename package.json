@@ -3,10 +3,9 @@
   "version": "1.0.0",
   "description": "Root package for FitOS application",
   "scripts": {
-    "start": "cd backend && npm start",
-    "build": "cd backend && npm install && cd ../frontend && npm install --legacy-peer-deps && npm run build"
+    "start": "npm start --prefix backend",
+    "build": "npm install --prefix backend && npm install --prefix frontend --legacy-peer-deps && npm run build --prefix frontend"
   },
   "author": "",
   "license": "ISC"
 }
-
