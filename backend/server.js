@@ -1,13 +1,9 @@
-// Filename: backend/server.js
-// Description: This version is for running the server locally. It includes app.listen().
-
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = 3001; // We'll run the backend on this port for local development
 
 // --- MIDDLEWARE ---
 app.use(cors()); 
@@ -25,10 +21,14 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE, (err) => {
 
 // --- API ENDPOINTS ---
 app.get('/api/workouts', (req, res) => {
-    const sql = `SELECT * FROM workouts`;
-    db.all(sql, [], (err, rows) => {
+    const workoutsSql = `SELECT * FROM workouts`;
+    const exercisesSql = `SELECT * FROM exercises`;
+
+    db.all(workoutsSql, [], (err, workouts) => {
         if (err) { res.status(500).json({ error: err.message }); return; }
-        res.json({ workouts: rows });
+        
+        // This endpoint sends only top-level workout info now
+        res.json({ workouts: workouts });
     });
 });
 
@@ -51,7 +51,6 @@ app.get('/api/workouts/:id', (req, res) => {
                 try {
                     return { ...ex, video_urls: JSON.parse(ex.video_urls || '[]') };
                 } catch (e) {
-                    console.error(`Failed to parse video_urls for exercise ${ex.id}:`, ex.video_urls);
                     return { ...ex, video_urls: [] };
                 }
             });
@@ -61,7 +60,6 @@ app.get('/api/workouts/:id', (req, res) => {
         });
     });
 });
-
 
 app.get('/api/history', (req, res) => {
     const sql = `
@@ -86,7 +84,5 @@ app.post('/api/history', (req, res) => {
     });
 });
 
-// --- START THE SERVER ---
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+// --- EXPORT FOR VERCEL ---
+module.exports = app;
