@@ -4,7 +4,7 @@
   "description": "Root package for FitOS application",
   "private": true,
   "scripts": {
-    "build": "./build.sh",
+    "build": "cd frontend && npm install --legacy-peer-deps && npm run build",
     "start": "node backend/server.js"
   }
 }
