@@ -5,21 +5,30 @@ const path = require('path');
 
 const app = express();
 
+// --- MIDDLEWARE ---
 app.use(cors()); 
 app.use(express.json());
 
+// --- DATABASE CONNECTION ---
 const dbPath = path.resolve(__dirname, './fitness.db');
 const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE, (err) => {
-    if (err) console.error('FATAL: Error opening database', err.message);
-    else console.log('Successfully connected to the database.');
+    if (err) {
+        console.error('FATAL: Error opening database', err.message);
+    } else {
+        console.log('Successfully connected to the database.');
+    }
 });
 
-// API endpoints... (full code omitted for brevity, ensure yours is complete)
+// --- API ENDPOINTS ---
 app.get('/api/workouts', (req, res) => {
-    const sql = `SELECT * FROM workouts`;
-    db.all(sql, [], (err, rows) => {
+    const workoutsSql = `SELECT * FROM workouts`;
+    const exercisesSql = `SELECT * FROM exercises`;
+
+    db.all(workoutsSql, [], (err, workouts) => {
         if (err) { res.status(500).json({ error: err.message }); return; }
-        res.json({ workouts: rows });
+        
+        // This endpoint sends only top-level workout info for the list view
+        res.json({ workouts: workouts });
     });
 });
 
@@ -28,12 +37,16 @@ app.get('/api/workouts/:id', (req, res) => {
     const workoutSql = `SELECT * FROM workouts WHERE id = ?`;
     const exercisesSql = `SELECT * FROM exercises WHERE workout_id = ?`;
     let workoutData = {};
+
     db.get(workoutSql, [workoutId], (err, row) => {
         if (err) { res.status(500).json({ error: err.message }); return; }
         if (!row) { res.status(404).json({ error: 'Workout not found.'}); return; }
+        
         workoutData = row;
+
         db.all(exercisesSql, [workoutId], (err, exercises) => {
             if (err) { res.status(500).json({ error: err.message }); return; }
+            
             const parsedExercises = exercises.map(ex => {
                 try {
                     return { ...ex, video_urls: JSON.parse(ex.video_urls || '[]') };
@@ -41,12 +54,13 @@ app.get('/api/workouts/:id', (req, res) => {
                     return { ...ex, video_urls: [] };
                 }
             });
+
             workoutData.exercises = parsedExercises;
             res.json({ workout: workoutData });
         });
     });
 });
-// ... other endpoints ...
+
 app.get('/api/history', (req, res) => {
     const sql = `
         SELECT h.id, h.completed_at, w.name, w.description, w.duration
@@ -70,4 +84,5 @@ app.post('/api/history', (req, res) => {
     });
 });
 
+// --- EXPORT FOR VERCEL ---
 module.exports = app;
