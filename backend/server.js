@@ -70,5 +70,4 @@ app.post('/api/history', (req, res) => {
     });
 });
 
-
 module.exports = app;
