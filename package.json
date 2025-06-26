@@ -2,13 +2,6 @@
   "name": "fitos-app-monorepo",
   "version": "1.0.0",
   "description": "Root package for FitOS application",
-  "scripts": {
-    "start": "node backend/server.js",
-    "build": "./build.sh"
-  },
-  "engines": {
-    "node": "18.x"
-  },
   "author": "",
   "license": "ISC"
 }
