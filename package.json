@@ -1,11 +1,10 @@
 {
   "name": "fitos-app-monorepo",
   "version": "1.0.0",
-  "private": true,
   "description": "Root package for FitOS application",
   "scripts": {
-    "start": "npm start --prefix backend",
-    "heroku-postbuild": "npm install --prefix backend && npm install --prefix frontend --legacy-peer-deps && npm run build --prefix frontend"
+    "start": "node backend/server.js",
+    "build": "./build.sh"
   },
   "engines": {
     "node": "18.x"
