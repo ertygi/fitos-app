@@ -4,10 +4,16 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
+// Render sets the PORT environment variable. We default to 3001 for local use.
+const PORT = process.env.PORT || 3001;
 
 // --- MIDDLEWARE ---
 app.use(cors()); 
 app.use(express.json());
+
+// --- SERVE STATIC REACT APP ---
+// This tells Express where to find the built React app.
+app.use(express.static(path.join(__dirname, '../frontend/build')));
 
 // --- DATABASE CONNECTION ---
 const dbPath = path.resolve(__dirname, './fitness.db');
@@ -22,13 +28,9 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE, (err) => {
 // --- API ENDPOINTS ---
 app.get('/api/workouts', (req, res) => {
     const workoutsSql = `SELECT * FROM workouts`;
-    const exercisesSql = `SELECT * FROM exercises`;
-
-    db.all(workoutsSql, [], (err, workouts) => {
+    db.all(workoutsSql, [], (err, rows) => {
         if (err) { res.status(500).json({ error: err.message }); return; }
-        
-        // This endpoint sends only top-level workout info for the list view
-        res.json({ workouts: workouts });
+        res.json({ workouts: rows });
     });
 });
 
@@ -84,5 +86,13 @@ app.post('/api/history', (req, res) => {
     });
 });
 
-// --- EXPORT FOR VERCEL ---
-module.exports = app;
+// --- CATCH-ALL FOR FRONTEND ROUTING ---
+// This must come AFTER all your API routes.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
+});
+
+// --- START THE SERVER ---
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
