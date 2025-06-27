@@ -4,9 +4,9 @@
   "description": "Root package for FitOS application",
   "private": true,
   "scripts": {
-    "build": "cd frontend && npm install --legacy-peer-deps && npm run build",
-    "start": "node backend/server.js",
-    "install:backend": "cd backend && npm install"
+    "postinstall": "npm install --prefix backend && npm install --prefix frontend --legacy-peer-deps",
+    "build": "npm run build --prefix frontend",
+    "start": "npm start --prefix backend"
   },
   "engines": {
     "node": "18.x"
