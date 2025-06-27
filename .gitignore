@@ -6,8 +6,6 @@
 # Production builds
 /frontend/build
 
-# Database file
-/backend/fitness.db
 
 # Environment variables
 .env
