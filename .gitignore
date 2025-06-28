@@ -23,4 +23,5 @@ pm2-*.log
 # System files
 .DS_Store
 Thumbs.db
+FitOSApp.code-workspace
 
