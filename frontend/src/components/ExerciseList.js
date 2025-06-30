@@ -1,7 +1,3 @@
-// -----------------------------------------------------------------
-// FILE: src/components/ExerciseList.js (Updated)
-// This version correctly displays the exercise preview image.
-// -----------------------------------------------------------------
 import React, { useState, useEffect } from 'react';
 import {
     Box, Typography, TextField, Button, Grid, Paper,
@@ -13,26 +9,23 @@ import Header from './common/Header.js';
 const API_URL = process.env.REACT_APP_API_URL || '';
 const PAGE_SIZE = 50;
 
-// Mock filter options
 const muscleGroups = ["Chest", "Back", "Legs", "Shoulders", "Core", "Biceps", "Triceps", "Abductors", "Glutes", "Hamstrings", "Quads", "Calves", "Lats"];
 const levels = ["Beginner", "Intermediate", "Advanced"];
 const equipmentTypes = ["Bodyweight", "Dumbbell", "Barbell", "Kettlebell", "Cable", "Resistance Band"];
 
-export default function ExerciseList({ onViewHistory }) {
+export default function ExerciseList({ currentUser, onLogout, onNavigateToWorkouts, onNavigateToGenerator, onNavigateToHistory }) {
     const [exercises, setExercises] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
     const [totalExercises, setTotalExercises] = useState(0);
     
-    // Filter states
     const [searchTerm, setSearchTerm] = useState('');
     const [muscle, setMuscle] = useState(null);
     const [level, setLevel] = useState(null);
     const [equipment, setEquipment] = useState(null);
     const [activeFilters, setActiveFilters] = useState({});
 
-    // This effect runs whenever the page or filters change
     useEffect(() => {
         setLoading(true);
         setError(null);
@@ -41,7 +34,7 @@ export default function ExerciseList({ onViewHistory }) {
         const params = new URLSearchParams({
             limit: PAGE_SIZE,
             offset,
-            ...activeFilters // Use the committed filters
+            ...activeFilters
         });
 
         fetch(`${API_URL}/api/exercises?${params.toString()}`)
@@ -56,12 +49,10 @@ export default function ExerciseList({ onViewHistory }) {
     }, [page, activeFilters]);
 
     const handleSearch = () => {
-        setPage(1); // Reset to the first page for a new search
-
-        // Map "Bodyweight" from the UI to "None" for the API query
+        setPage(1);
         let equipmentToSearch = equipment;
         if (equipment === 'Bodyweight') {
-            equipmentToSearch = 'None';
+            equipmentToSearch = 'None'; 
         }
 
         setActiveFilters({
@@ -73,7 +64,6 @@ export default function ExerciseList({ onViewHistory }) {
     };
 
     const handleLoadMore = () => {
-        // We only increment the page number. The useEffect will handle the fetch.
         if (!loading) {
             setPage(prevPage => prevPage + 1);
         }
@@ -84,7 +74,6 @@ export default function ExerciseList({ onViewHistory }) {
         setMuscle(null);
         setLevel(null);
         setEquipment(null);
-        // Resetting active filters and page will trigger a fresh fetch
         setActiveFilters({});
         setPage(1); 
     };
@@ -93,7 +82,13 @@ export default function ExerciseList({ onViewHistory }) {
 
     return (
         <>
-            <Header title="Exercises" onHistoryClick={onViewHistory} />
+            <Header 
+                currentUser={currentUser}
+                onLogout={onLogout}
+                onNavigateToWorkouts={onNavigateToWorkouts}
+                onNavigateToGenerator={onNavigateToGenerator}
+                onNavigateToHistory={onNavigateToHistory}
+            />
             <Typography variant="h4" gutterBottom>Exercise List</Typography>
             
             <Paper sx={{ p: 2, mb: 3 }}>
@@ -123,7 +118,7 @@ export default function ExerciseList({ onViewHistory }) {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Preview</TableCell> {/* Added Preview header */}
+                            <TableCell>Preview</TableCell>
                             <TableCell>Exercise Name</TableCell>
                             <TableCell>Muscle Group</TableCell>
                             <TableCell>Level</TableCell>
@@ -133,20 +128,13 @@ export default function ExerciseList({ onViewHistory }) {
                     <TableBody>
                         {exercises.map(ex => (
                             <TableRow key={ex.id}>
-                                {/* CORRECTED: Render an image tag for the preview */}
                                 <TableCell>
                                     {ex.image_url ? (
-                                        <img 
-                                            src={ex.image_url} 
-                                            alt={ex.name} 
-                                            style={{ height: '60px', width: 'auto', borderRadius: '4px' }} 
-                                        />
-                                    ) : (
-                                        "No Preview"
-                                    )}
+                                        <img src={ex.image_url} alt={ex.name} style={{ height: '60px', width: 'auto', borderRadius: '4px' }} />
+                                    ) : ( "No Preview" )}
                                 </TableCell>
                                 <TableCell>{ex.name}</TableCell>
-                                <TableCell>{(ex.target_muscles || []).join(', ')}</TableCell>
+                                <TableCell>{ex.target_muscles?.join(', ')}</TableCell>
                                 <TableCell>{ex.difficulty}</TableCell>
                                 <TableCell>{ex.equipment}</TableCell>
                             </TableRow>

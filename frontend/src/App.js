@@ -1,8 +1,5 @@
-// -----------------------------------------------------------------
-// FILE: src/App.js (Updated with Tabs)
-// -----------------------------------------------------------------
 import React, { useState, useEffect } from 'react';
-import { ThemeProvider, createTheme, CssBaseline, Container, Alert, Tabs, Tab, Box } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, Container, Alert } from '@mui/material';
 
 // Import Views
 import WorkoutList from './components/WorkoutList.js';
@@ -11,7 +8,9 @@ import WorkoutSession from './components/WorkoutSession.js';
 import History from './components/History.js';
 import Complete from './components/Complete.js';
 import Loading from './components/common/Loading.js';
-import ExerciseList from './components/ExerciseList.js'; // Import new component
+import Login from './components/Login.js';
+import Generator from './components/Generator.js'; // Import the new Generator component
+import ExerciseList from './components/ExerciseList.js';
 
 const darkTheme = createTheme({
   palette: {
@@ -29,89 +28,129 @@ const darkTheme = createTheme({
 const API_URL = process.env.REACT_APP_API_URL || '';
 
 export default function App() {
-    const [currentView, setCurrentView] = useState('workouts'); // 'workouts', 'exercises', 'detail', etc.
+    const [currentUser, setCurrentUser] = useState(null); 
+    const [currentView, setCurrentView] = useState('login');
+    
     const [workouts, setWorkouts] = useState([]);
     const [selectedWorkout, setSelectedWorkout] = useState(null);
-    // CORRECTED: Restored missing state variables and handler functions
     const [workoutHistory, setWorkoutHistory] = useState([]);
     const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-
-    // Fetch initial workouts for the workout list
     useEffect(() => {
-        setIsLoading(true);
-        fetch(`${API_URL}/api/workouts`)
-            .then(res => { if (!res.ok) throw new Error('Network response was not ok'); return res.json(); })
-            .then(data => { setWorkouts(data.workouts); setIsLoading(false); })
-            .catch(err => {
-                setError('Failed to fetch workouts. Is the backend server running?');
-                setIsLoading(false); console.error(err);
-            });
-    }, []);
+        if (currentUser && currentView === 'list') { 
+            setIsLoading(true);
+            fetch(`${API_URL}/api/workouts`)
+                .then(res => res.json())
+                .then(data => { 
+                    const topLevelWorkouts = data.workouts.map(({ exercises, ...rest }) => rest);
+                    setWorkouts(topLevelWorkouts); 
+                })
+                .catch(err => setError('Failed to fetch workouts.'))
+                .finally(() => setIsLoading(false));
+        }
+    }, [currentUser, currentView]);
+
+    const handleLogin = (user) => {
+        setCurrentUser(user);
+        setCurrentView('list');
+    };
+
+    const handleLogout = () => {
+        setCurrentUser(null);
+        setCurrentView('login');
+    };
     
     const fetchHistory = () => {
+        if (!currentUser) return;
         setIsLoading(true);
-        fetch(`${API_URL}/api/history`)
+        fetch(`${API_URL}/api/users/${currentUser.id}/history`)
             .then(res => res.json())
             .then(data => { setWorkoutHistory(data.history); setIsLoading(false); setCurrentView('history'); })
-            .catch(err => { setError('Failed to fetch history.'); setIsLoading(false); console.error(err); });
-    }
+            .catch(err => { setError('Failed to fetch history.'); setIsLoading(false); });
+    };
 
     const viewWorkoutDetail = (workout) => {
-        // This function will need to be implemented to fetch full details
-        setSelectedWorkout(workout);
-        setCurrentView('detail');
-    };
-    
-    const startWorkout = (workoutToStart) => {
-        setSelectedWorkout(workoutToStart);
-        setCurrentExerciseIndex(0);
-        setCurrentView('session');
+        setIsLoading(true);
+        fetch(`${API_URL}/api/workouts/${workout.id}`)
+             .then(res => res.json())
+             .then(data => {
+                setSelectedWorkout(data.workout);
+                setIsLoading(false);
+                setCurrentView('detail');
+             })
+             .catch(err => { setError('Failed to fetch workout details.'); setIsLoading(false); });
     };
 
-    const endWorkout = () => {
-        if (!selectedWorkout) return;
-        fetch(`${API_URL}/api/history`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ workoutId: selectedWorkout.id })
-        })
-        .then(res => res.json())
-        .then(() => { setCurrentView('complete'); })
-        .catch(err => { setError('Failed to save workout history.'); console.error(err); });
+    const startWorkout = (workoutToStart) => { 
+        setSelectedWorkout(workoutToStart);
+        setCurrentExerciseIndex(0); 
+        setCurrentView('session'); 
     };
     
-    const nextExercise = () => {
+    const endWorkout = () => {
+        if (!selectedWorkout || !currentUser) return;
+        fetch(`${API_URL}/api/history`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ workoutId: selectedWorkout.id, userId: currentUser.id })
+        })
+        .then(res => res.json()).then(() => { setCurrentView('complete'); })
+        .catch(err => { setError('Failed to save workout history.'); });
+    };
+
+    const backToList = () => { 
+        setSelectedWorkout(null); 
+        setCurrentExerciseIndex(0); 
+        setCurrentView('list'); 
+        setError(null); 
+    };
+    
+    const nextExercise = () => { 
         if (selectedWorkout && currentExerciseIndex < selectedWorkout.exercises.length - 1) {
             setCurrentExerciseIndex(prev => prev + 1);
         } else {
             endWorkout();
         }
-    };
+     };
 
+     // Placeholder for when the generator form is submitted
+     const handleWorkoutGenerated = (formData) => {
+         alert(`Workout generated with the following options: ${JSON.stringify(formData)}`);
+         setCurrentView('list');
+     }
 
     const renderView = () => {
-        if (isLoading && (currentView === 'workouts' || currentView === 'exercises')) return <Loading />;
+        if (isLoading) return <Loading />;
         if (error) return <Alert severity="error" sx={{ mt: 4 }}>{error}</Alert>;
 
+        if (!currentUser) {
+            return <Login onLogin={handleLogin} />;
+        }
+
+        const commonNavProps = {
+            currentUser,
+            onLogout: handleLogout,
+            onNavigateToWorkouts: () => setCurrentView('list'),
+            onNavigateToGenerator: () => setCurrentView('generator'),
+            onNavigateToHistory: fetchHistory,
+            onNavigateToExercises: () => setCurrentView('exercises'),
+        };
+
         switch (currentView) {
-            case 'detail': return <WorkoutDetail workout={selectedWorkout} onStart={() => startWorkout(selectedWorkout)} onBack={() => setCurrentView('workouts')} />;
+            case 'detail': return <WorkoutDetail workout={selectedWorkout} onStart={() => startWorkout(selectedWorkout)} onBack={backToList} />;
             case 'session': return <WorkoutSession workout={selectedWorkout} currentExerciseIndex={currentExerciseIndex} onNext={nextExercise} onEnd={endWorkout} />;
-            case 'history': return <History history={workoutHistory} onBack={() => setCurrentView('workouts')} />;
-            case 'complete': return <Complete onBack={() => setCurrentView('workouts')} onViewHistory={fetchHistory} />;
-            case 'workouts': 
+            case 'history': return <History history={workoutHistory} onBack={backToList} />;
+            case 'complete': return <Complete onBack={backToList} onViewHistory={fetchHistory} />;
+            case 'generator': return <Generator onWorkoutGenerated={handleWorkoutGenerated} onBack={backToList} />;
+            case 'exercises': return <ExerciseList {...commonNavProps} />;
+            case 'list': 
+            default: 
                 return <WorkoutList 
                             workouts={workouts} 
                             onSelectWorkout={viewWorkoutDetail}
-                            onViewHistory={fetchHistory}
+                            {...commonNavProps}
                         />;
-            case 'exercises':
-                return <ExerciseList onViewHistory={fetchHistory} />;
-
-            default:
-                return <WorkoutList workouts={workouts} onSelectWorkout={viewWorkoutDetail} />;
         }
     };
     
@@ -119,13 +158,6 @@ export default function App() {
         <ThemeProvider theme={darkTheme}>
             <CssBaseline />
             <Container maxWidth="lg" sx={{ py: 2 }}>
-                <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-                    <Tabs value={currentView} onChange={(e, newValue) => setCurrentView(newValue)} centered>
-                        <Tab label="Workouts" value="workouts" />
-                        <Tab label="Exercises" value="exercises" />
-                        <Tab label="History" value="history" />
-                    </Tabs>
-                </Box>
                 {renderView()}
             </Container>
         </ThemeProvider>
