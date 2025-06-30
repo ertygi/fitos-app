@@ -1,8 +1,3 @@
-
-// -----------------------------------------------------------------
-// FILE: src/components/WorkoutDetail.js
-// This component now correctly displays the rich list of exercises for the selected workout.
-// -----------------------------------------------------------------
 import React from 'react';
 import { Box, Button, Typography, IconButton, Grid, Alert, Paper, List, Link } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -25,24 +20,25 @@ export default function WorkoutDetail({ workout, onStart, onBack }) {
                 {workout.exercises.map((ex) => (
                     <Paper key={ex.id} elevation={3} sx={{ p: 2, bgcolor: 'background.paper' }}>
                         <Grid container spacing={2} alignItems="center">
-                            {/* Thumbnail Section - Forcing single row layout */}
+                            {/* Media Column (shows GIF if available, otherwise video) */}
                             <Grid item xs={4}>
-                                {ex.video_urls && ex.video_urls.length > 0 ? (
+                                {ex.image_url ? (
+                                    <img src={ex.image_url} alt={ex.name} style={{ width: '100%', borderRadius: '8px' }}/>
+                                ) : ex.video_urls && ex.video_urls.length > 0 ? (
                                     <video 
                                         style={{ width: '100%', borderRadius: '8px' }}
                                         autoPlay loop muted playsInline key={ex.video_urls[0]}
                                     >
                                         <source src={ex.video_urls[0]} type="video/mp4" />
-                                        Your browser does not support the video tag.
                                     </video>
                                 ) : (
                                     <Box sx={{ bgcolor: 'action.hover', height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 1 }}>
-                                        <Typography variant="caption">No Video</Typography>
+                                        <Typography variant="caption">No Media</Typography>
                                     </Box>
                                 )}
                             </Grid>
                             
-                            {/* Information Section - Forcing single row layout */}
+                            {/* Information Section */}
                             <Grid item xs={5}>
                                 <Link href="#" underline="hover" sx={{ color: 'primary.main', cursor: 'pointer' }}>
                                     <Typography variant="h6">{ex.name}</Typography>
@@ -55,10 +51,11 @@ export default function WorkoutDetail({ workout, onStart, onBack }) {
                                 </Box>
                             </Grid>
                             
-                            {/* Muscle Map Section - Forcing single row layout */}
-                            <Grid item xs={3}>
-                               <img src={ex.svg_front_url} alt="Front muscle diagram" style={{ height: '120px' }} />
-                               <img src={ex.svg_back_url} alt="Back muscle diagram" style={{ height: '120px' }} />
+                            {/* Muscle Map Section */}
+                            <Grid item xs={3} sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                                {/* Your BodyMap component would go here */}
+                                <img src="https://placehold.co/60x120/1e1e1e/00e5ff?text=Front" alt="Front muscle diagram" />
+                                <img src="https://placehold.co/60x120/1e1e1e/00e5ff?text=Back" alt="Back muscle diagram" />
                             </Grid>
                         </Grid>
                     </Paper>

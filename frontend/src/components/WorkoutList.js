@@ -1,8 +1,3 @@
-
-// -----------------------------------------------------------------
-// FILE: src/components/WorkoutList.js
-// This component now shows a simple list of workouts, not the exercises.
-// -----------------------------------------------------------------
 import React from 'react';
 import { Box, Typography, Card, CardContent, CardActionArea } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -14,7 +9,10 @@ function WorkoutCard({ workout, onSelect }) {
             <CardActionArea onClick={() => onSelect(workout)}>
                 <CardContent>
                     <Typography variant="h5" component="div" color="primary.main">{workout.name}</Typography>
-                    <Typography sx={{ mb: 1.5 }} color="text.secondary">{workout.description}</Typography>
+                    {/* A simpler, single-line description is now shown on the list view */}
+                    <Typography sx={{ mb: 1.5 }} color="text.secondary" noWrap>
+                        {workout.description}
+                    </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center' }} color="text.secondary">
                         <AccessTimeIcon sx={{ mr: 1, fontSize: '1rem' }} />
                         <Typography variant="body2">{workout.duration}</Typography>
