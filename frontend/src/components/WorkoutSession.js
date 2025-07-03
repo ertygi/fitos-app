@@ -93,7 +93,7 @@ export default function WorkoutDetail({ workout, onStart, onBack }) {
                                 <Link href="#" underline="hover" sx={{ color: 'primary.main', cursor: 'pointer' }}>
                                     <Typography variant="h6">{ex.name}</Typography>
                                 </Link>
-                                <Typography variant="body2" color="text.secondary">{ex.difficulty}</Typography>
+                                <Typography variant="body2" color="text.secondary">{ex.level}</Typography>
                                 <Typography variant="body1" sx={{ my: 1 }}>{ex.reps}</Typography>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <AccessibilityNewIcon sx={{ color: 'text.secondary' }}/>

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Box, Typography, Card, CardContent, CardActionArea, Button } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import Header from './common/Header.js';
 
 function WorkoutCard({ workout, onSelect }) {
     return (
@@ -20,16 +19,9 @@ function WorkoutCard({ workout, onSelect }) {
     );
 }
 
-export default function WorkoutList({ workouts, onSelectWorkout, onViewHistory, currentUser, onLogout, onNavigateToGenerator, onNavigateToExercises }) {
+export default function WorkoutList({ workouts, onSelectWorkout, onNavigateToExercises }) {
     return (
         <>
-            <Header 
-                currentUser={currentUser}
-                onLogout={onLogout}
-                onNavigateToWorkouts={() => {}} 
-                onNavigateToGenerator={onNavigateToGenerator}
-                onNavigateToHistory={onViewHistory}
-            />
             <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2}}>
                 <Typography variant="h4" gutterBottom>Workouts</Typography>
                 <Button variant="outlined" onClick={onNavigateToExercises}>

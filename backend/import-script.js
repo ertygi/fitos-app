@@ -42,16 +42,16 @@ async function importExercises() {
       const muscleGroupsJson = JSON.stringify(ex["Muscle Group"] ? [ex["Muscle Group"].toLowerCase().replace(/ /g, '_')] : []);
 
       await client.query(
-        `INSERT INTO exercises (workout_id, name, difficulty, equipment, video_urls, image_url, target_muscles, reps, type)
+        `INSERT INTO exercises (workout_id, name, level, equipment, video_urls, image_url, target_muscles, reps, type)
          VALUES ($1, $2, $3, $4, $5, $6, $7, '10-12 reps, 3 sets', 'reps')`, // Using placeholder reps/type
         [
           TARGET_WORKOUT_ID,
           ex["Exercise Name"],
           ex["Level"],
           ex["Equipment"],
-          videoUrlsJson,
+          ex["Video URL"],
           ex["GIF"],
-          muscleGroupsJson
+          ex["Muscle Group"],
         ]
       );
       console.log(`Imported: ${ex["Exercise Name"]}`);

@@ -3,8 +3,8 @@ import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import HistoryIcon from '@mui/icons-material/History';
 import LogoutIcon from '@mui/icons-material/Logout';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'; 
-import ViewListIcon from '@mui/icons-material/ViewList'; 
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import ViewListIcon from '@mui/icons-material/ViewList';
 
 export default function Header({ currentUser, onLogout, onNavigateToWorkouts, onNavigateToGenerator, onNavigateToHistory }) {
     return (
@@ -17,7 +17,7 @@ export default function Header({ currentUser, onLogout, onNavigateToWorkouts, on
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     {currentUser && <Typography>Welcome, {currentUser.name}</Typography>}
                     <Button color="inherit" startIcon={<ViewListIcon />} onClick={onNavigateToWorkouts}>
-                        My Workouts
+                        My Workouts s
                     </Button>
                     <Button color="inherit" startIcon={<AutoAwesomeIcon />} onClick={onNavigateToGenerator}>
                         Generator

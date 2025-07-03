@@ -3,8 +3,7 @@ const WORKOUTS_DATA = [
         id: 1, name: "Upper Body Strength",
         description: "Focuses on building mass and strength in the back, chest, and shoulders using classic compound and isolation movements.",
         duration: "60 mins",
-        // This now just lists the names of the exercises for this workout.
-        exerciseNames: [
+        exerciseNames: [ // The seed script will find these exercises by name and link them
             "Chin Ups",
             "Barbell Bench Press",
             "Dumbbell Lateral Raise",
@@ -39,8 +38,8 @@ const WORKOUTS_DATA = [
 ];
 
 const USERS_DATA = [
-    { id: 1, name: "Ertil", preferences: { goal: ['Gain Strength', 'Gain muscle'], level: 'Intermediate' } },
-    { id: 2, name: "Barbara", preferences: { goal: 'Lose Weight', level: 'Beginner' } }
+{ id: 1, name: "Gani", email: "gani@fitos.com", role: "admin", preferences: { goal: 'Gain Strength', level: 'Advanced' } },
+{ id: 2, name: "Ertil", email: "ertil@gani.al", role: "user", preferences: { goal: ['Gain Strength', 'Gain Muscle'], level: 'Intermediate' } },
 ];
 
 module.exports = { WORKOUTS_DATA, USERS_DATA };

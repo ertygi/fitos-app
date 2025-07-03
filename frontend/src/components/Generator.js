@@ -47,6 +47,7 @@ export default function Generator({ onWorkoutGenerated, onBack }) {
         }));
     };
     
+    // The submit button now calls the prop passed from App.js
     const handleSubmit = () => {
         onWorkoutGenerated(formData); 
     };

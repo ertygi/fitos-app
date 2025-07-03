@@ -40,8 +40,9 @@ export default function ExerciseList({ currentUser, onLogout, onNavigateToWorkou
         fetch(`${API_URL}/api/exercises?${params.toString()}`)
             .then(res => res.json())
             .then(data => {
-                setExercises(prev => page === 1 ? data.exercises : [...prev, ...data.exercises]);
-                setTotalExercises(data.total);
+                const newExercises = data.exercises || [];
+                 setExercises(prev => page === 1 ? newExercises : [...prev, ...newExercises]);
+                setTotalExercises(data.total || 0);
             })
             .catch(err => setError("Failed to fetch exercises."))
             .finally(() => setLoading(false));
@@ -57,7 +58,7 @@ export default function ExerciseList({ currentUser, onLogout, onNavigateToWorkou
 
         setActiveFilters({
             search: searchTerm,
-            muscle: muscle ? muscle.toLowerCase().replace(/ /g, '_') : '',
+            muscle: muscle || '',
             level: level || '',
             equipment: equipmentToSearch || ''
         });
@@ -78,17 +79,10 @@ export default function ExerciseList({ currentUser, onLogout, onNavigateToWorkou
         setPage(1); 
     };
     
-    const hasMore = exercises.length < totalExercises;
+    const hasMore = exercises && exercises.length < totalExercises;
 
     return (
         <>
-            <Header 
-                currentUser={currentUser}
-                onLogout={onLogout}
-                onNavigateToWorkouts={onNavigateToWorkouts}
-                onNavigateToGenerator={onNavigateToGenerator}
-                onNavigateToHistory={onNavigateToHistory}
-            />
             <Typography variant="h4" gutterBottom>Exercise List</Typography>
             
             <Paper sx={{ p: 2, mb: 3 }}>
@@ -134,8 +128,9 @@ export default function ExerciseList({ currentUser, onLogout, onNavigateToWorkou
                                     ) : ( "No Preview" )}
                                 </TableCell>
                                 <TableCell>{ex.name}</TableCell>
-                                <TableCell>{ex.target_muscles?.join(', ')}</TableCell>
-                                <TableCell>{ex.difficulty}</TableCell>
+                                {/* CORRECTED: Now displays the single target_muscle string */}
+                                <TableCell>{ex.target_muscle}</TableCell>
+                                <TableCell>{ex.level}</TableCell>
                                 <TableCell>{ex.equipment}</TableCell>
                             </TableRow>
                         ))}

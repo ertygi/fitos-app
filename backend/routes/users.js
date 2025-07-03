@@ -2,7 +2,7 @@ const express = require('express');
 const pool = require('../db/pool');
 const router = express.Router();
 
-// GET all users
+// GET all users (for login screen)
 router.get('/', async (req, res) => {
     try {
         const result = await pool.query('SELECT id, name FROM users');
