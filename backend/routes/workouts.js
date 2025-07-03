@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------
 // FILE: backend/routes/workouts.js (Updated)
-// This version now includes the POST route to save generated workouts.
+// This version now correctly saves the 'instructions' for new exercises.
 // -----------------------------------------------------------------
 const express = require('express');
 const pool = require('../db/pool');
@@ -38,7 +38,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// --- CORRECTED: Added the missing POST route ---
+// POST a new workout (for saving generated workouts)
 router.post('/', async (req, res) => {
     const { workout, userId } = req.body;
     if (!workout || !userId) {
@@ -55,17 +55,24 @@ router.post('/', async (req, res) => {
         const newWorkoutId = workoutRes.rows[0].id;
 
         for (const ex of workout.exercises) {
-            let exerciseResult = await client.query('SELECT id FROM exercises WHERE name = $1', [ex.name]);
+            let exerciseResult = await client.query('SELECT id FROM exercises WHERE name ILIKE $1', [ex.name]);
             let exerciseId;
 
             if (exerciseResult.rows.length > 0) {
                 exerciseId = exerciseResult.rows[0].id;
             } else {
                 // If the exercise from Gemini doesn't exist, add it to our library
+                // CORRECTED: Now includes the 'instructions' field in the INSERT statement
                 const newExerciseRes = await client.query(
-                    `INSERT INTO exercises (name, level, equipment, target_muscle)
-                     VALUES ($1, $2, $3, $4) RETURNING id`,
-                    [ex.name, ex.level || 'Intermediate', ex.equipment || 'Bodyweight', ex.target_muscle]
+                    `INSERT INTO exercises (name, level, equipment, target_muscle, instructions)
+                     VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+                    [
+                        ex.name, 
+                        ex.level || 'Intermediate', 
+                        ex.equipment || 'Bodyweight', 
+                        ex.target_muscle,
+                        ex.instructions || 'No instructions provided.' // Save the new instructions
+                    ]
                 );
                 exerciseId = newExerciseRes.rows[0].id;
             }

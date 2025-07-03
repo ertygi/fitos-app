@@ -29,6 +29,7 @@ const createTablesQuery = `
     CREATE TABLE exercises (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL UNIQUE,
+        instructions  TEXT,
         target_muscle VARCHAR(255),
         level VARCHAR(50),
         equipment VARCHAR(100),

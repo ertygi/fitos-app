@@ -1,3 +1,7 @@
+// -----------------------------------------------------------------
+// FILE: backend/routes/generator.js (Updated)
+// The prompt now asks the Gemini API to include instructions.
+// -----------------------------------------------------------------
 const express = require('express');
 const router = express.Router();
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
@@ -8,18 +12,19 @@ const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/
 router.post('/', async (req, res) => {
     const { level, equipment, muscles, duration, goal } = req.body;
     
-    const availableEquipment = Object.keys(equipment).filter(key => equipment[key]).join(', ');
+    const availableEquipment = Object.keys(equipment).filter(key => equipment[key]).join(', ') || 'none';
     const targetMuscles = Object.keys(muscles).filter(key => muscles[key]).join(', ');
 
+    // UPDATED PROMPT: Now requests an 'instructions' field.
     const prompt = `
-        Generate a workout routine based on the following criteria.
+        Generate a workout routine based on these criteria:
         - Goal: ${goal}
         - Fitness Level: ${level}
         - Duration: ${duration}
-        - Equipment: ${availableEquipment}
+        - Available Equipment: ${availableEquipment}
         - Target Muscles: ${targetMuscles}
 
-        IMPORTANT: Respond with ONLY a valid JSON object in the following format. Do not include any other text.
+        IMPORTANT: Respond with ONLY a valid JSON object in the following format. Do not include any other text, greetings, or explanations.
         
         {
           "name": "Your Custom Workout",
@@ -31,13 +36,15 @@ router.post('/', async (req, res) => {
               "target_muscle": "A single primary muscle group",
               "equipment": "Equipment Name",
               "level": "Difficulty Level",
-              "type": "reps or time"
+              "type": "reps or time",
+              "instructions": "A step-by-step guide on how to perform the exercise, formatted as a single string with newlines."
             }
           ]
         }
     `;
 
     try {
+        console.log("Sending prompt to Gemini API...");
         const geminiResponse = await fetch(GEMINI_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -55,6 +62,9 @@ router.post('/', async (req, res) => {
         const generatedWorkout = JSON.parse(jsonString);
 
         generatedWorkout.id = `gen-${Date.now()}`;
+        generatedWorkout.duration = duration;
+        
+        console.log("Successfully received and parsed workout from Gemini.");
         res.json({ workout: generatedWorkout });
 
     } catch (err) {

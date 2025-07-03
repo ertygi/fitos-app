@@ -4,12 +4,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import AccessibilityNewIcon from '@mui/icons-material/AccessibilityNew';
 
 export default function WorkoutDetail({ workout, onStart, onBack, onSave, onRegenerate }) {
-    // DEBUG: Log the props received by the component
-    console.log("--- WorkoutDetail.js: Received props ---", { workout });
-
     if (!workout || !workout.exercises) {
-        // This log will tell us if the component is rendering before data is ready
-        console.error("--- WorkoutDetail.js: Rendering with invalid workout data! ---");
         return <Alert severity="warning">Workout details could not be loaded.</Alert>;
     }
     
@@ -31,10 +26,6 @@ export default function WorkoutDetail({ workout, onStart, onBack, onSave, onRege
                             <Grid item xs={4}>
                                 {ex.image_url ? (
                                     <img src={ex.image_url} alt={ex.name} style={{ width: '100%', borderRadius: '8px' }}/>
-                                ) : ex.video_urls && ex.video_urls.length > 0 ? (
-                                    <video style={{ width: '100%', borderRadius: '8px' }} autoPlay loop muted playsInline key={ex.video_urls[0]}>
-                                        <source src={ex.video_urls[0]} type="video/mp4" />
-                                    </video>
                                 ) : (
                                     <Box sx={{ bgcolor: 'action.hover', height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 1 }}>
                                         <Typography variant="caption">No Media</Typography>
@@ -53,8 +44,8 @@ export default function WorkoutDetail({ workout, onStart, onBack, onSave, onRege
                                 </Box>
                             </Grid>
                             <Grid item xs={3} sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                                <img src="[https://placehold.co/60x120/1e1e1e/00e5ff?text=Front](https://placehold.co/60x120/1e1e1e/00e5ff?text=Front)" alt="Front muscle diagram" />
-                                <img src="[https://placehold.co/60x120/1e1e1e/00e5ff?text=Back](https://placehold.co/60x120/1e1e1e/00e5ff?text=Back)" alt="Back muscle diagram" />
+                               <img src="[https://placehold.co/60x120/1e1e1e/00e5ff?text=Front](https://placehold.co/60x120/1e1e1e/00e5ff?text=Front)" alt="Front muscle diagram" />
+                               <img src="[https://placehold.co/60x120/1e1e1e/00e5ff?text=Back](https://placehold.co/60x120/1e1e1e/00e5ff?text=Back)" alt="Back muscle diagram" />
                             </Grid>
                         </Grid>
                     </Paper>
