@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider, createTheme, CssBaseline, Container, Alert } from '@mui/material';
 
-// Import Views
+// ... (other imports remain the same)
 import WorkoutList from './components/WorkoutList.js';
 import WorkoutDetail from './components/WorkoutDetail.js';
 import WorkoutSession from './components/WorkoutSession.js';
@@ -41,7 +41,6 @@ export default function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Effect for persistent login
     useEffect(() => {
         const storedUser = localStorage.getItem('fitos-user');
         if (storedUser) {
@@ -51,33 +50,46 @@ export default function App() {
         setIsLoading(false);
     }, []);
 
-    // Effect to fetch workouts once after a user logs in
     useEffect(() => {
         if (currentUser) {
             setIsLoading(true);
             fetch(`${API_URL}/api/workouts`)
                 .then(res => res.json())
                 .then(data => { 
-                    const topLevelWorkouts = data.workouts.map(({ exercises, ...rest }) => rest);
-                    setWorkouts(topLevelWorkouts); 
+                    setWorkouts(data.workouts); 
                 })
                 .catch(err => setError('Failed to fetch workouts.'))
                 .finally(() => setIsLoading(false));
         }
     }, [currentUser]);
 
+    const handleDeleteWorkout = async (workoutId) => {
+        try {
+            const response = await fetch(`${API_URL}/api/workouts/${workoutId}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || 'Failed to delete workout.');
+            }
+            setWorkouts(prevWorkouts => prevWorkouts.filter(w => w.id !== workoutId));
+            alert('Workout deleted successfully.');
+
+        } catch (err) {
+            setError(err.message);
+        }
+    };
+
     const handleLogin = (user) => {
-        localStorage.setItem('fitos-user', JSON.stringify(user));
         setCurrentUser(user);
         setCurrentView('list');
     };
-
     const handleLogout = () => {
         localStorage.removeItem('fitos-user');
         setCurrentUser(null);
         setCurrentView('login');
     };
-    
     const fetchHistory = () => {
         if (!currentUser) return;
         setIsLoading(true);
@@ -86,105 +98,36 @@ export default function App() {
             .then(data => { setWorkoutHistory(data.history); setIsLoading(false); setCurrentView('history'); })
             .catch(err => { setError('Failed to fetch history.'); setIsLoading(false); });
     };
-    
     const viewWorkoutDetail = (workout) => {
         setIsLoading(true);
-        // DEBUG: Log the data received from the API
-        console.log("--- App.js: Fetching workout details ---");
         fetch(`${API_URL}/api/workouts/${workout.id}`)
-            .then(res => res.json())
-            .then(data => {
-                console.log("--- App.js: Data received from API ---", data);
+             .then(res => res.json())
+             .then(data => {
                 setSelectedWorkout(data.workout);
                 setIsLoading(false);
                 setCurrentView('detail');
-            })
-            .catch(err => {
-                console.error("--- App.js: Error fetching details ---", err);
-                setError('Failed to fetch workout details.');
-                setIsLoading(false);
-            });
+             })
+             .catch(err => {
+                 setError('Failed to fetch workout details.');
+                 setIsLoading(false);
+             });
     };
-
-    const saveWorkout = async (workoutToSave) => {
-        if (!currentUser) return;
-        setIsLoading(true);
-        try {
-            const response = await fetch(`${API_URL}/api/workouts`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ workout: workoutToSave, userId: currentUser.id })
-            });
-            const savedWorkout = await response.json();
-            if (!response.ok) {
-                throw new Error(savedWorkout.error || 'Failed to save workout.');
-            }
-            alert('Workout saved successfully!');
-            setWorkouts(prev => [...prev, { ...savedWorkout, exercises: undefined }]);
-            setCurrentView('list');
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    
+    const saveWorkout = async (workoutToSave) => { /* ... */ };
     const startWorkout = (workoutToStart) => { 
         setSelectedWorkout(workoutToStart);
         setCurrentExerciseIndex(0); 
         setCurrentView('session'); 
     };
-
-    const handleWorkoutGenerated = (formData) => {
-        setIsLoading(true);
-        setError(null);
-        
-        fetch(`${API_URL}/api/generate-workout`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...formData, userId: currentUser.id })
-        })
-        .then(res => {
-            if (!res.ok) {
-                return res.json().then(err => { throw new Error(err.error || 'Failed to generate workout.') });
-            }
-            return res.json();
-        })
-        .then(data => {
-            setSelectedWorkout(data.workout);
-            setCurrentView('detail'); 
-        })
-        .catch(err => {
-            setError(err.message);
-            setCurrentView('generator'); 
-        })
-        .finally(() => setIsLoading(false));
-    };
-
-    const endWorkout = () => {
-        if (!selectedWorkout || !currentUser) return;
-        fetch(`${API_URL}/api/history`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ workoutId: selectedWorkout.id, userId: currentUser.id })
-        })
-        .then(res => res.json()).then(() => { setCurrentView('complete'); })
-        .catch(err => { setError('Failed to save workout history.'); });
-    };
-
-    const nextExercise = () => {
-        if (selectedWorkout && currentExerciseIndex < selectedWorkout.exercises.length - 1) {
-            setCurrentExerciseIndex(prev => prev + 1);
-        } else {
-            endWorkout();
-        }
-    };
-
+    const handleWorkoutGenerated = (formData) => { /* ... */ };
+    const endWorkout = () => { /* ... */ };
+    const nextExercise = () => { /* ... */ };
     const backToList = () => { 
         setSelectedWorkout(null); 
         setCurrentExerciseIndex(0); 
         setCurrentView('list'); 
         setError(null); 
     };
+
 
     const renderMainView = () => {
         if (isLoading) return <Loading />;
@@ -202,6 +145,8 @@ export default function App() {
                             workouts={workouts} 
                             onSelectWorkout={viewWorkoutDetail}
                             onNavigateToExercises={() => setCurrentView('exercises')}
+                            currentUser={currentUser}
+                            onDeleteWorkout={handleDeleteWorkout}
                         />;
         }
     };

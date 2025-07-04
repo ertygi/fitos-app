@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------
 // FILE: backend/routes/workouts.js (Updated)
-// This version now correctly saves the 'instructions' for new exercises.
+// This version now includes the DELETE route to remove workouts.
 // -----------------------------------------------------------------
 const express = require('express');
 const pool = require('../db/pool');
@@ -61,17 +61,15 @@ router.post('/', async (req, res) => {
             if (exerciseResult.rows.length > 0) {
                 exerciseId = exerciseResult.rows[0].id;
             } else {
-                // If the exercise from Gemini doesn't exist, add it to our library
-                // CORRECTED: Now includes the 'instructions' field in the INSERT statement
                 const newExerciseRes = await client.query(
-                    `INSERT INTO exercises (name, level, equipment, target_muscle, instructions)
+                    `INSERT INTO exercises (name, level, equipment, muscle_group, instructions)
                      VALUES ($1, $2, $3, $4, $5) RETURNING id`,
                     [
                         ex.name, 
                         ex.level || 'Intermediate', 
                         ex.equipment || 'Bodyweight', 
                         ex.target_muscle,
-                        ex.instructions || 'No instructions provided.' // Save the new instructions
+                        ex.instructions || 'No instructions provided.'
                     ]
                 );
                 exerciseId = newExerciseRes.rows[0].id;
@@ -92,6 +90,24 @@ router.post('/', async (req, res) => {
         res.status(500).json({ error: 'Failed to save workout.' });
     } finally {
         client.release();
+    }
+});
+
+// --- NEW: DELETE a workout ---
+router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const deleteResult = await pool.query('DELETE FROM workouts WHERE id = $1', [id]);
+        
+        if (deleteResult.rowCount === 0) {
+            return res.status(404).json({ error: 'Workout not found.' });
+        }
+
+        res.status(200).json({ message: 'Workout deleted successfully.' });
+
+    } catch (err) {
+        console.error(`Error deleting workout with id ${id}:`, err);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
